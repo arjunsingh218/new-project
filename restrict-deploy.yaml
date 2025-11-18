@@ -15,4 +15,3 @@ spec:
       containers:
       - name: bad
         image: af.switchmedia.asia/test:latest
-
