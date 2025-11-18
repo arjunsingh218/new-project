@@ -15,5 +15,3 @@ spec:
       containers:
       - name: good
         image: nginx:1.25
-
-        

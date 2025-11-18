@@ -15,4 +15,3 @@ spec:
         kinds: ["Deployment", "StatefulSet", "DaemonSet"]
       #- apiGroups: [""]
       #  kinds: ["Pod"]
-
