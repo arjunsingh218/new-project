@@ -32,3 +32,4 @@ spec:
       startswith(s, prefix) {
         substring(s, 0, count(prefix)) == prefix
       }
+
