@@ -1,0 +1,17 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sForbidImagePrefix
+metadata:
+  name: forbid-af-switchmedia
+spec:
+  parameters:
+    forbidden_prefix: "af.switchmedia.asia/"
+  match:
+    #namespaces: ["*"]
+    #namespaces:
+    #- production
+    #- staging
+    kinds:
+      - apiGroups: ["apps"]
+        kinds: ["Deployment", "StatefulSet", "DaemonSet"]
+      #- apiGroups: [""]
+      #  kinds: ["Pod"]
