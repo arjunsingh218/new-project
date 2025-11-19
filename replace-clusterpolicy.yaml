@@ -1,0 +1,26 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: replace-image-prefix
+spec:
+  rules:
+    - name: replace-image-prefix
+      match:
+        resources:
+          kinds:
+            - Deployment
+            - StatefulSet
+            - DaemonSet
+            - Pod
+            - Job
+            - CronJob
+      mutate:
+        foreach:
+          - list: "spec.template.spec.containers"
+            patchStrategicMerge:
+              spec:
+                template:
+                  spec:
+                    containers:
+                      - name: "{{ element.name }}"
+                        image: "{{ regex_replace('^af\\.switchmedia\\.asia(.*)$', 'harbor.switch.tv/library$1', element.image) }}"

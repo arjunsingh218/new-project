@@ -1,13 +1,13 @@
-apiVersion: templates.gatekeeper.sh/v1beta1
+apiVersion: templates.gatekeeper.sh/v1
 kind: ConstraintTemplate
 metadata:
   name: k8sforbidimageprefix
 spec:
-  crd: #Creating a CUSTOM CRD
+  crd:
     spec:
       names:
         kind: K8sForbidImagePrefix
-      validation:  #Template parameters schema
+      validation:
         openAPIV3Schema:
           properties:
             parameters:
@@ -15,21 +15,35 @@ spec:
               properties:
                 forbidden_prefix:
                   type: string
+                suggested_prefix:
+                  type: string
 
   targets:
-  - target: admission.k8s.gatekeeper.sh # logic for validation 
+  - target: admission.k8s.gatekeeper.sh
     rego: |
       package k8sforbidimageprefix
 
       violation[{"msg": msg}] {
-        prefix := input.parameters.forbidden_prefix
-        img := input.review.object.spec.template.spec.containers[_].image
-        startswith(img, prefix)
+        forbidden := input.parameters.forbidden_prefix
+        suggested := input.parameters.suggested_prefix
 
-        msg := sprintf("image '%v' is blocked. Forbidden prefix: '%v'", [img, prefix])
+        img := input.review.object.spec.template.spec.containers[_].image
+
+        startswith(img, forbidden)
+
+        # extract the part after forbidden_prefix
+        trimmed := trim_prefix(img, forbidden)
+
+        msg := sprintf(
+          "Image '%v' is blocked. Use: '%v%v' instead.",
+          [img, suggested, trimmed]
+        )
       }
 
       startswith(s, prefix) {
         substring(s, 0, count(prefix)) == prefix
-      } 
+      }
 
+      trim_prefix(full, prefix) = result {
+        result := substring(full, count(prefix), count(full) - count(prefix))
+      }
