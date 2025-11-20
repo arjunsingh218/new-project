@@ -16,3 +16,4 @@ spec:
       containers:
         - name: test
           image: af.switchmedia.asia/someimage:latest
+          

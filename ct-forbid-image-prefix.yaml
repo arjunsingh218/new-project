@@ -1,13 +1,13 @@
-apiVersion: templates.gatekeeper.sh/v1
+apiVersion: templates.gatekeeper.sh/v1beta1
 kind: ConstraintTemplate
 metadata:
   name: k8sforbidimageprefix
 spec:
-  crd:
+  crd: 
     spec:
       names:
         kind: K8sForbidImagePrefix
-      validation:
+      validation:  
         openAPIV3Schema:
           properties:
             parameters:
@@ -15,35 +15,42 @@ spec:
               properties:
                 forbidden_prefix:
                   type: string
-                suggested_prefix:
-                  type: string
 
   targets:
-  - target: admission.k8s.gatekeeper.sh
+  - target: admission.k8s.gatekeeper.sh 
     rego: |
       package k8sforbidimageprefix
 
       violation[{"msg": msg}] {
-        forbidden := input.parameters.forbidden_prefix
-        suggested := input.parameters.suggested_prefix
-
+        prefix := input.parameters.forbidden_prefix
         img := input.review.object.spec.template.spec.containers[_].image
+        startswith(img, prefix)
 
-        startswith(img, forbidden)
+        msg := sprintf("image '%v' in initContainers is blocked. Forbidden prefix: '%v'. Please use a different image prefix, such as 'harbor.switch.tv/library'.", [img, prefix])
+      }
+      violation[{"msg": msg}] {
+        prefix := input.parameters.forbidden_prefix
 
-        # extract the part after forbidden_prefix
-        trimmed := trim_prefix(img, forbidden)
+        input.review.object.spec.template.spec.initContainers != null
+        container := input.review.object.spec.template.spec.initContainers[_]
+        img := container.image
+        startswith(img, prefix)
 
-        msg := sprintf(
-          "Image '%v' is blocked. Use: '%v%v' instead.",
-          [img, suggested, trimmed]
-        )
+        msg := sprintf("image '%v' in initContainers is blocked. Forbidden prefix: '%v'", [img, prefix])
+      }
+
+
+      violation[{"msg": msg}] {
+        prefix := input.parameters.forbidden_prefix
+
+        input.review.object.spec.template.spec.ephemeralContainers != null
+        container := input.review.object.spec.template.spec.ephemeralContainers[_]
+        img := container.image
+        startswith(img, prefix)
+
+        msg := sprintf("image '%v' in ephemeralContainers is blocked. Forbidden prefix: '%v'", [img, prefix])
       }
 
       startswith(s, prefix) {
         substring(s, 0, count(prefix)) == prefix
-      }
-
-      trim_prefix(full, prefix) = result {
-        result := substring(full, count(prefix), count(full) - count(prefix))
       }

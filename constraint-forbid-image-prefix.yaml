@@ -5,12 +5,13 @@ metadata:
 spec:
   parameters:
     forbidden_prefix: "af.switchmedia.asia/"
-    suggested_prefix: "harbor.switch.tv/library/"
   match:
+    #namespaces: ["*"]
+    #namespaces:
+    #- production
+    #- staging
     kinds:
       - apiGroups: ["apps"]
         kinds: ["Deployment", "StatefulSet", "DaemonSet"]
-      - apiGroups: ["batch"]
-        kinds: ["Job", "CronJob"]
-      - apiGroups: [""] 
-        kinds: ["Pod"]
+      #- apiGroups: [""]
+      #  kinds: ["Pod"]
