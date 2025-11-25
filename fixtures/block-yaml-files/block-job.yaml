@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-block
+spec:
+  template:
+    metadata:
+      labels:
+        app: job-block
+    spec:
+      containers:
+      - name: bad
+        image: af.switchmedia.asia/badjob:latest
+      restartPolicy: Never

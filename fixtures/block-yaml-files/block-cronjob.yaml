@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cronjob-block
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: cronjob-block
+        spec:
+          containers:
+          - name: bad
+            image: af.switchmedia.asia/badcron:latest
+          restartPolicy: Never
