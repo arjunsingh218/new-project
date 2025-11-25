@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: test-rewrite
+  name: good-single
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: test-rewrite
+      app: good-single
   template:
     metadata:
       labels:
-        app: test-rewrite
+        app: good-single
     spec:
       containers:
-        - name: app
-          image: af.switchmedia.asia/team/myapp:1.0
+      - name: good
+        image: docker.io/library/nginx

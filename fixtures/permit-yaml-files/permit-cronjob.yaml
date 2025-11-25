@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cronjob-allow
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: cronjob-allow
+        spec:
+          containers:
+          - name: good
+            image: docker.io/library/busybox:latest
+          restartPolicy: Never

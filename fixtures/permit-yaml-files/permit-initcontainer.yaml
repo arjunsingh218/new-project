@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: test-initcontainer
+  name: allowed-initcontainer
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: test-initcontainer
+      app: allowed-initcontainer
   template:
     metadata:
       labels:
-        app: test-initcontainer
+        app: allowed-initcontainer
     spec:
       initContainers:
       - name: init
-        image: af.switchmedia.asia/init-test:latest
+        image: docker.io/library/busybox:latest
       containers:
       - name: main
-        image: nginx:latest
+        image: docker.io/library/nginx:latest

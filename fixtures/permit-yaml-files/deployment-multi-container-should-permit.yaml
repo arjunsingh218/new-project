@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: good-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: good-deploy
+  template:
+    metadata:
+      labels:
+        app: good-deploy
+    spec:
+      containers:
+      - name: c1
+        image: docker.io/library/nginx
+      - name: c2
+        image: docker.io/library/busybox

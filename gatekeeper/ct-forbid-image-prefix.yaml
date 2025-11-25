@@ -1,0 +1,107 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sforbidimageprefix
+spec:
+  crd: 
+    spec:
+      names:
+        kind: K8sForbidImagePrefix
+      validation:  
+        openAPIV3Schema:
+          properties:
+            parameters:
+              type: object
+              properties:
+                forbidden_prefix:
+                  type: string
+
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package k8sforbidimageprefix
+
+      # 1. Regular containers in Deployments, StatefulSets, DaemonSets
+      violation[{"msg": msg}] {
+        prefix := input.parameters.forbidden_prefix
+        containers := object.get(input.review.object.spec.template.spec, "containers", [])
+        container := containers[_]
+        img := container.image
+        startswith(img, prefix)
+        msg := sprintf("image '%v' in Containers is blocked. Forbidden prefix: '%v'.", [img, prefix])
+      }
+
+      # 2. initContainers in Deployments, StatefulSets, DaemonSets
+      violation[{"msg": msg}] {
+        prefix := input.parameters.forbidden_prefix
+        containers := object.get(input.review.object.spec.template.spec, "initContainers", [])
+        container := containers[_]
+        img := container.image
+        startswith(img, prefix)
+        msg := sprintf("image '%v' in initContainers is blocked. Forbidden prefix: '%v'.", [img, prefix])
+      }
+
+      # 3. ephemeralContainers in Deployments, StatefulSets, DaemonSets
+      violation[{"msg": msg}] {
+        prefix := input.parameters.forbidden_prefix
+        containers := object.get(input.review.object.spec.template.spec, "ephemeralContainers", [])
+        container := containers[_]
+        img := container.image
+        startswith(img, prefix)
+        msg := sprintf("image '%v' in ephemeralContainers is blocked. Forbidden prefix: '%v'.", [img, prefix])
+      }
+
+      # 4. CronJob containers
+      violation[{"msg": msg}] {
+        prefix := input.parameters.forbidden_prefix
+        job_spec := object.get(input.review.object.spec.jobTemplate.spec.template, "spec", {})
+        containers := object.get(job_spec, "containers", [])
+        container := containers[_]
+        img := container.image
+        startswith(img, prefix)
+        msg := sprintf("image '%v' in CronJob Containers is blocked. Forbidden prefix: '%v'.", [img, prefix])
+      }
+
+      # 5. CronJob initContainers
+      violation[{"msg": msg}] {
+        prefix := input.parameters.forbidden_prefix
+        job_spec := object.get(input.review.object.spec.jobTemplate.spec.template, "spec", {})
+        containers := object.get(job_spec, "initContainers", [])
+        container := containers[_]
+        img := container.image
+        startswith(img, prefix)
+        msg := sprintf("image '%v' in CronJob initContainers is blocked. Forbidden prefix: '%v'.", [img, prefix])
+      }
+
+      # 6. Direct Pods
+      violation[{"msg": msg}] {
+        prefix := input.parameters.forbidden_prefix
+        containers := object.get(input.review.object.spec, "containers", [])
+        container := containers[_]
+        img := container.image
+        startswith(img, prefix)
+        msg := sprintf("image '%v' in Pod Containers is blocked. Forbidden prefix: '%v'.", [img, prefix])
+      }
+
+      violation[{"msg": msg}] {
+        prefix := input.parameters.forbidden_prefix
+        containers := object.get(input.review.object.spec, "initContainers", [])
+        container := containers[_]
+        img := container.image
+        startswith(img, prefix)
+        msg := sprintf("image '%v' in Pod initContainers is blocked. Forbidden prefix: '%v'.", [img, prefix])
+      }
+
+      violation[{"msg": msg}] {
+        prefix := input.parameters.forbidden_prefix
+        containers := object.get(input.review.object.spec, "ephemeralContainers", [])
+        container := containers[_]
+        img := container.image
+        startswith(img, prefix)
+        msg := sprintf("image '%v' in Pod ephemeralContainers is blocked. Forbidden prefix: '%v'.", [img, prefix])
+      }
+
+      # Helper function
+      startswith(s, prefix) {
+        substring(s, 0, count(prefix)) == prefix
+      }

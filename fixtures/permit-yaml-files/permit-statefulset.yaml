@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: allowed-sts
+spec:
+  serviceName: "allowed"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: allowed-sts
+  template:
+    metadata:
+      labels:
+        app: allowed-sts
+    spec:
+      containers:
+      - name: web
+        image: docker.io/library/nginx:latest
+      - name: helper
+        image: docker.io/library/busybox:latest
