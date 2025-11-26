@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-allow
+spec:
+  template:
+    metadata:
+      labels:
+        app: job-allow
+    spec:
+      containers:
+      - name: good
+        image: docker.io/library/busybox:latest
+      restartPolicy: Never

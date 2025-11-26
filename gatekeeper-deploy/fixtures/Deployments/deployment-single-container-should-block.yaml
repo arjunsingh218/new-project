@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bad-single
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bad-single
+  template:
+    metadata:
+      labels:
+        app: bad-single
+    spec:
+      containers:
+      - name: bad
+        image: af.switchmedia.asia/blocked

@@ -1,0 +1,110 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8sforbidimageprefix
+spec:
+  crd: 
+    spec:
+      names:
+        kind: K8sForbidImagePrefix
+      validation:  
+        openAPIV3Schema:
+          properties:
+            parameters:
+              type: object
+              properties:
+                forbidden_prefix:
+                  type: string
+
+  targets:
+  - target: admission.k8s.gatekeeper.sh
+    rego: |
+      package k8sforbidimageprefix
+
+      # 1. Regular containers in Deployments, StatefulSets, DaemonSets
+      violation[{"msg": msg}] {
+        prefix := input.parameters.forbidden_prefix
+        containers := object.get(input.review.object.spec.template.spec, "containers", [])
+        container := containers[_]
+        img := container.image
+        startswith(img, prefix)
+        newImage := replace(img, "af.switchmedia.asia", "harbor.switch.tv/library")  
+        msg := sprintf("image '%v' in Containers is blocked as a result of the Artifactory -> Harbor migration done November 2025. Forbidden prefix: '%v'. Use '%v' instead.", [img, prefix, newImage])
+      }
+
+      # 2. initContainers in Deployments, StatefulSets, DaemonSets
+      violation[{"msg": msg}] {
+        prefix := input.parameters.forbidden_prefix
+        containers := object.get(input.review.object.spec.template.spec, "initContainers", [])
+        container := containers[_]
+        img := container.image
+        startswith(img, prefix)
+        newImage := replace(img, "af.switchmedia.asia", "harbor.switch.tv/library")  
+        msg := sprintf("image '%v' in initContainers is blocked as a result of the Artifactory -> Harbor migration done November 2025. Forbidden prefix: '%v'. Use '%v' instead.", [img, prefix, newImage])
+      }
+
+      # 3. ephemeralContainers in Deployments, StatefulSets, DaemonSets
+      violation[{"msg": msg}] {
+        prefix := input.parameters.forbidden_prefix
+        containers := object.get(input.review.object.spec.template.spec, "ephemeralContainers", [])
+        container := containers[_]
+        img := container.image
+        startswith(img, prefix)
+        newImage := replace(img, "af.switchmedia.asia", "harbor.switch.tv/library")  
+        msg := sprintf("image '%v' in ephemeralContainers is blocked as a result of the Artifactory -> Harbor migration done November 2025. Forbidden prefix: '%v'. Use '%v' instead.", [img, prefix, newImage])
+      }
+
+      # 4. CronJob containers
+      violation[{"msg": msg}] {
+        prefix := input.parameters.forbidden_prefix
+        job_spec := object.get(input.review.object.spec.jobTemplate.spec.template, "spec", {})
+        containers := object.get(job_spec, "containers", [])
+        container := containers[_]
+        img := container.image
+        startswith(img, prefix)
+        newImage := replace(img, "af.switchmedia.asia", "harbor.switch.tv/library")  
+        msg := sprintf("image '%v' in CronJob Containers is blocked as a result of the Artifactory -> Harbor migration done November 2025. Forbidden prefix: '%v'. Use '%v' instead.", [img, prefix, newImage])
+      }
+
+      # 5. CronJob initContainers
+      violation[{"msg": msg}] {
+        prefix := input.parameters.forbidden_prefix
+        job_spec := object.get(input.review.object.spec.jobTemplate.spec.template, "spec", {})
+        containers := object.get(job_spec, "initContainers", [])
+        container := containers[_]
+        img := container.image
+        startswith(img, prefix)
+        newImage := replace(img, "af.switchmedia.asia", "harbor.switch.tv/library")  
+        msg := sprintf("image '%v' in CronJob initContainers is blocked as a result of the Artifactory -> Harbor migration done November 2025. Forbidden prefix: '%v'. Use '%v' instead.", [img, prefix, newImage])
+      }
+
+      # 6. Direct Pods
+      violation[{"msg": msg}] {
+        prefix := input.parameters.forbidden_prefix
+        containers := object.get(input.review.object.spec, "containers", [])
+        container := containers[_]
+        img := container.image
+        startswith(img, prefix)
+        newImage := replace(img, "af.switchmedia.asia", "harbor.switch.tv/library")  
+        msg := sprintf("image '%v' in Pod Containers is blocked as a result of the Artifactory -> Harbor migration done November 2025. Forbidden prefix: '%v'. Use '%v' instead.", [img, prefix, newImage])
+      }
+
+      violation[{"msg": msg}] {
+        prefix := input.parameters.forbidden_prefix
+        containers := object.get(input.review.object.spec, "initContainers", [])
+        container := containers[_]
+        img := container.image
+        startswith(img, prefix)
+        newImage := replace(img, "af.switchmedia.asia", "harbor.switch.tv/library")  
+        msg := sprintf("image '%v' in Pod initContainers is blocked as a result of the Artifactory -> Harbor migration done November 2025. Forbidden prefix: '%v'. Use '%v' instead.", [img, prefix, newImage])
+      }
+
+      violation[{"msg": msg}] {
+        prefix := input.parameters.forbidden_prefix
+        containers := object.get(input.review.object.spec, "ephemeralContainers", [])
+        container := containers[_]
+        img := container.image
+        startswith(img, prefix)
+        newImage := replace(img, "af.switchmedia.asia", "harbor.switch.tv/library")  
+        msg := sprintf("image '%v' in Pod ephemeralContainers is blocked as a result of the Artifactory -> Harbor migration done November 2025. Forbidden prefix: '%v'. Use '%v' instead.", [img, prefix, newImage])
+      }

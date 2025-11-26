@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: allowed-initcontainer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: allowed-initcontainer
+  template:
+    metadata:
+      labels:
+        app: allowed-initcontainer
+    spec:
+      initContainers:
+      - name: init
+        image: docker.io/library/busybox:latest
+      containers:
+      - name: main
+        image: docker.io/library/nginx:latest

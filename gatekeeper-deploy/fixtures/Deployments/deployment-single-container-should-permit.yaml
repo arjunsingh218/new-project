@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: good-single
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: good-single
+  template:
+    metadata:
+      labels:
+        app: good-single
+    spec:
+      containers:
+      - name: good
+        image: docker.io/library/nginx
